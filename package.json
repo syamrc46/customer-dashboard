@@ -17,14 +17,15 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "shelljs": "0.10.0",
-    "netlify-cli": "23.0.0"
+    "customize-cra": "^1.0.0",
+    "netlify-cli": "23.0.0",
+    "react-app-rewired": "^2.2.1",
+    "shelljs": "0.10.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
     "deploy:netlify": "node deploy.js"
   },
   "eslintConfig": {
