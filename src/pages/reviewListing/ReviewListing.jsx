@@ -52,6 +52,7 @@ export default function ReviewListing() {
 
     useEffect(() => {
         if (user.email) fetchReviews();
+        else navigate('/login');
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
