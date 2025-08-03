@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
 
@@ -14,8 +15,8 @@ import {
 
 
 } from '@shopify/polaris';
-import { useLocation, useParams } from 'react-router-dom';
-import { ArrowRightMinor, ExportMinor } from '@shopify/polaris-icons';
+import { useParams } from 'react-router-dom';
+import { ArrowRightMinor } from '@shopify/polaris-icons';
 import Form, { Field } from 'rc-field-form';
 import { StarIcon } from '../../components/StarIcon/StarIcon';
 import MediaUploader from '../../components/MediaUploader/MediaUploader';
@@ -25,18 +26,12 @@ import Confetti from '../../components/Confetti/Confetti';
 import StarIcons from "../../asset/starIcon.png";
 
 
-//dummy encoded data = eyJlbWFpbCI6ImphbmUuZG9lQGV4YW1wbGUuY29tIiwibmFtZSI6IkphbmUgRG9lIiwicHJvZHVjdElkIjoiU0tVLTk4NzY1NCIsInByb2R1Y3ROYW1lIjoiT2NlYW4gQmx1ZSBTaGlydCIsInJhdGluZyI6NSwiaW1hZ2VVcmwiOiJodHRwczovL25hcnV0by1jaGVja291dC1leHRlbnNpYmlsaXR5Lm15c2hvcGlmeS5jb20vY2RuL3Nob3AvZmlsZXMvTWFpbl9iMTNhZDQ1My00NzdjLTRlZDEtOWI0My04MWYzMzQ1YWRmZDYuanBnP3Y9MTcxNTM2MTQzOSZ3aWR0aD0xMTAwIiwic2hvcCI6Im5hcnV0by1jaGVja291dC1leHRlbnNpYmlsaXR5Lm15c2hvcGlmeS5jb20ifQ==
-
-
 const ReviewFromEmail = () => {
     const { params } = useParams();
-
     /**
       * Create a form instance
       */
     const [form] = Form.useForm();
-
-    const location = useLocation();
     const [hovered, setHovered] = useState(null);
     const [initialValues, setInitialValues] = useState({});
 
@@ -117,6 +112,7 @@ const ReviewFromEmail = () => {
             getSettings(data, data.shop);
             form.setFieldValue('name', data.name);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const allowUploadMedias = useMemo(() => {
@@ -307,7 +303,7 @@ const ReviewFromEmail = () => {
                                 <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
 
                                     <Box background="bg-surface" style={{ padding: "20px", borderRadius: "10px", backgroundColor: "#fff", margin: "30px auto", maxWidth: "600px", display: "flex", justifyContent: "center", alignItems: "center" }} borderRadius="300" shadow="md" width='100%' align='center' >
-                                        <img src={StarIcons} alt='Product Image' />
+                                        <img src={StarIcons} alt='Product' />
                                         <BlockStack align='center' gap="500">
                                             <Text variant='headingLg' alignment='center'>Congratulations🎉</Text>
                                             <BlockStack align='center' gap={"300"} inlineAlign='center' >

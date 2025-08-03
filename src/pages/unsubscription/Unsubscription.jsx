@@ -15,15 +15,16 @@ const Unsubscription = () => {
         if (params) {
             let data = JSON.parse(atob(params) || '{}');
             data.blocked = true;
-            // http.post(`api/public/review-dashboard/reviews/unsubscribe/customer`, data).then((response) => {
-            //     if ((response || {}).status !== 'success') {
-            //         showErrorMessage('Something went wrong! Contact our customer support.');
-            //     }
-            //     setLoader(false);
-            // }).catch(() => {
-            //     showErrorMessage('Something went wrong! Contact our customer support.');
-            // });
+            http.post(`api/public/review-dashboard/reviews/unsubscribe/customer`, data).then((response) => {
+                if ((response || {}).status !== 'success') {
+                    showErrorMessage('Something went wrong! Contact our customer support.');
+                }
+                setLoader(false);
+            }).catch(() => {
+                showErrorMessage('Something went wrong! Contact our customer support.');
+            });
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return !loader ? (<Page narrowWidth >
@@ -32,7 +33,7 @@ const Unsubscription = () => {
                 <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                     <Box background="bg-surface" padding="500" borderRadius="300" shadow="md" width='100%' align='center' >
                         <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', maxWidth: '150px', height: '150px', marginBottom: '20px' }} >
-                            <img style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '5px' }} src={Unsubscribe} alt='Product Image' />
+                            <img style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '5px' }} src={Unsubscribe} alt='Product' />
                         </Box>
                         <BlockStack align='center' gap="500">
                             <Text variant='headingLg' alignment='center'>We are sorry to see you go.</Text>

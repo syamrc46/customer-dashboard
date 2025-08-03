@@ -52,12 +52,12 @@ export default function ReviewListing() {
 
     useEffect(() => {
         if (user.email) fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const deleteReview = useCallback((id) => {
         setApiLoader(true);
         http.deleteMethode(`api/public/review-dashboard/reviews/delete/${id}`).then((res) => {
-            const { status } = res || {};
             setApiLoader(false);
         }).catch(() => {
             setApiLoader(false);

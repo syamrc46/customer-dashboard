@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState, memo } from "react";
 import './confetti.css';
 
 const COLORS = ['#2ecc71', '#3498db', '#e67e22', '#e67e22', '#e74c3c'];
-const TOP_OFFSET = window.innerHeight;
 const LEFT_OFFSET = 150;
 
 const randomNumber = (min, max) => min + Math.floor(Math.random() * (max - min));
@@ -18,6 +17,7 @@ const Particle = ({ children, size }) => {
         ref.current.style.setProperty('--x', `${randomNumber(-LEFT_OFFSET, LEFT_OFFSET)}px`);
         ref.current.style.setProperty('--y', `${window.innerHeight - top + randomNumber(0, 300)}px`);
         ref.current.style.setProperty('--rotate', `${randomNumber(200, 3000)}deg`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return React.cloneElement(child, {
@@ -79,16 +79,17 @@ const Confetti = () => {
     const [particles, setParticles] = useState([]);
     const { innerWidth } = window;
 
-    const handleOnClick = () => {
-        const _id = id;
-        id++;
+    // const handleOnClick = () => {
+    //     const _id = id;
+    //     id++;
 
-        setParticles(particles => [...particles, _id]);
-        setTimeout(() => {
-            // Cleanup
-            setParticles(particles => particles.filter(id => id !== _id));
-        }, 5000);
-    }
+    //     setParticles(particles => [...particles, _id]);
+    //     setTimeout(() => {
+    //         // Cleanup
+    //         setParticles(particles => particles.filter(id => id !== _id));
+    //     }, 5000);
+    // }
+    
     useEffect(() => {
         const _id = id;
         id++;

@@ -11,6 +11,7 @@ const MediaGalleryModal = ({ url, show, setModalState }) => {
         } else {
             handleClose();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [show]);
 
     const handleVideoClick = () => {

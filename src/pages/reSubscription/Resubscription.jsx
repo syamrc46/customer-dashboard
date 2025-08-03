@@ -15,21 +15,22 @@ const Resubscription = () => {
         if (params) {
             let data = JSON.parse(atob(params) || '{}');
             data.blocked = false;
-            // http.post(`api/public/review-dashboard/reviews/unsubscribe/customer`, data).then((response) => {
-            //     if ((response || {}).status !== 'success') {
-            //         showErrorMessage('Something went wrong! Contact our customer support.');
-            //     }
-            //     setLoader(false);
-            //     navigate('/');
-            // }).catch(() => {
-            //     showErrorMessage('Something went wrong! Contact our customer support.');
-            // });
+            http.post(`api/public/review-dashboard/reviews/unsubscribe/customer`, data).then((response) => {
+                if ((response || {}).status !== 'success') {
+                    showErrorMessage('Something went wrong! Contact our customer support.');
+                }
+                setLoader(false);
+                navigate('/');
+            }).catch(() => {
+                showErrorMessage('Something went wrong! Contact our customer support.');
+            });
         } else {
             setLoader(false);
         }
         setTimeout(() => {
             navigate('/');
         }, 5000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -39,7 +40,10 @@ const Resubscription = () => {
                     <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                         <Box background="bg-surface" padding="500" borderRadius="300" shadow="md" width='100%' align='center' >
                             <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', maxWidth: '100px', height: '100px', marginBottom: '20px' }} >
-                                <img style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '5px' }} src={Subscribed} alt='Product Image' />
+                                <img 
+                                    style={{ objectFit: 'cover', width: '100%', height: '100%', borderRadius: '5px' }}
+                                    src={Subscribed} alt='Product' 
+                                />
                             </Box>
                             <BlockStack align='center' gap="500">
                                 <Text variant='headingLg' alignment='center'>Welcome back!</Text>

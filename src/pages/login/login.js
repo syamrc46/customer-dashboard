@@ -1,4 +1,5 @@
-import { Card, Text, BlockStack, TextField, Button, InlineStack, Page, Grid, Box } from '@shopify/polaris';import { useState, useCallback } from 'react';
+import { Text, TextField, Button, InlineStack, Page, Box } from '@shopify/polaris';
+import { useState, useCallback } from 'react';
 import { http } from '../../utils/http';
 import { useNavigate } from 'react-router-dom';
 import { setUser } from '../../utils/userActions';
@@ -24,7 +25,7 @@ export default function Login() {
     setEmail(input);
     setIsValid(validateEmail(input));
     setErrorEmail('');
-  }, []);
+  }, [validateEmail]);
 
   const handleOTPChange = useCallback((input) => {
     // const input = e.target.value;
@@ -75,7 +76,7 @@ export default function Login() {
          * Show an error message like something went wrong
          */
       });
-  }, [otp, email]);
+  }, [otp, email, navigate]);
 
   return (
     <Page fullWidth>

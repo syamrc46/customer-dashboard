@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import { useEffect } from 'react';
 import { http } from '../../utils/http';
-import { Page, Badge, Card, TextField, Box, Text, BlockStack } from '@shopify/polaris';
+import { Page, Card, TextField, Box, Text, BlockStack } from '@shopify/polaris';
 import { useNavigate } from 'react-router-dom';
 import Form, { Field } from 'rc-field-form';
 import { StarIcon } from '../../components/StarIcon/StarIcon';
@@ -72,7 +72,7 @@ const EditReview = () => {
         }).catch(() => {
             toggleSubmitLoader(false);
         });
-    }, [initialData, form]);
+    }, [initialData, form, navigate]);
 
     return loader ? <PageLoader /> : (
         <Page

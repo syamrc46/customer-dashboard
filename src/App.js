@@ -1,4 +1,4 @@
-import Login from './pages/login/login';import { AppRouter } from './routes/AppRouter';
+import { AppRouter } from './routes/AppRouter';
 
 function App() {
   return (

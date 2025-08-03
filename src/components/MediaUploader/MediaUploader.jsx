@@ -4,7 +4,6 @@ import {
     BlockStack,
     Text,
     Button,
-    Divider,
     Thumbnail,
     InlineStack,
 } from '@shopify/polaris';
@@ -34,7 +33,7 @@ const MediaUploader = ({ onChange, form, settings }) => {
         const fieldValues = form.getFieldsValue();
         const newMediaUrls = [...fieldValues.images, ...uploaded];
         onChange({ ...fieldValues, images: newMediaUrls });
-    }, []);
+    }, [form, onChange]);
 
     const onRemoveMedias = useCallback((remove, index) => {
         /**
@@ -65,7 +64,8 @@ const MediaUploader = ({ onChange, form, settings }) => {
             remove(index);
         })
 
-    })
+    }, [form, onChange]);
+    
     const renderMedia = (url, remove, index) => {
         const type = getFileTypeFromExtension(url);
         const name = url.split('/').pop();
