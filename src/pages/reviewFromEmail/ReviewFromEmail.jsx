@@ -138,8 +138,8 @@ const ReviewFromEmail = () => {
 
             toggleSubmitLoader(true);
             http.post(`api/public/reviews/save`, dataToSubmit).then(({ status }) => {
-            toggleReviewed(true);
-            toggleSubmitLoader(false);
+                toggleReviewed(true);
+                toggleSubmitLoader(false);
             }).catch(() => {
                 toggleSubmitLoader(false);
             });
