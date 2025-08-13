@@ -102,7 +102,7 @@ const ReviewFromEmail = () => {
             checkReviewed(data);
             getSettings(data.shop);
         });
-    }, []);
+    }, [checkReviewed, requestId, form]);
 
     useEffect(() => {
         if (requestId) {
