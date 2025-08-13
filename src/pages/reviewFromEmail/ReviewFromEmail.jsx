@@ -27,7 +27,7 @@ import StarIcons from "../../asset/starIcon.png";
 
 
 const ReviewFromEmail = () => {
-    const { params } = useParams();
+    const { params: requestId } = useParams();
     /**
       * Create a form instance
       */
@@ -42,56 +42,14 @@ const ReviewFromEmail = () => {
     const [submitLoader, toggleSubmitLoader] = useState(false);
     const [isReviewed, toggleReviewed] = useState(false);
     const [uploadMediachecked, setUploadMediachecked] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
-    const decodeBase64Review = (param) => {
-        try {
-            const decoded = decodeURIComponent(atob(param));
-            console.log(JSON.parse(decoded));
-            return JSON.parse(decoded);
-        } catch (error) {
-            console.error('Decode error:', error);
-            return {};
-        }
-    };
-
-    const getSettings = async (reviewData, shop) => {
+    const getSettings = async (shop) => {
         setIsloading(true);
         http.get(`api/public/review-dashboard/reviews/settings?shop=${shop}`).then((response) => {
             const { data } = response;
             console.log(data, "settings here");
             setSettings(data);
-            /**
-             * Update the form with the saved upsell details
-             */
-
-            if (reviewData) {
-                form.setFieldsValue({
-                    email: reviewData.email || '',
-                    name: reviewData.name || '',
-                    productId: reviewData.productId || '',
-                    productName: reviewData.productName || '',
-                    imageUrl: reviewData.imageUrl || '',
-                    rating: reviewData.rating || 0,
-                    images: [],
-                    deletedMedias: [],
-                    title: '',
-                    description: '',
-
-                });
-                setInitialValues({
-                    email: reviewData.email || '',
-                    name: reviewData.name || '',
-                    productId: reviewData.productId || '',
-                    productName: reviewData.productName || '',
-                    imageUrl: reviewData.imageUrl || '',
-                    rating: reviewData.rating || 0,
-                    images: [],
-                    deletedMedias: [],
-                    title: '',
-                    description: '',
-
-                });
-            }
             setIsloading(false);
         });
     }
@@ -103,14 +61,52 @@ const ReviewFromEmail = () => {
         });
     }, []);
 
-    useEffect(() => {
-        if (params) {
-            const data = decodeBase64Review(params);
+    const getRequest = useCallback(() => {
+        http.get(`api/public/review-dashboard/reviews/request?id=${requestId}`).then((response) => {
+            const { data, status } = response;
+            if (status !== 'success') return;
+            /**
+             * Update the form with the saved upsell details
+             */
+            if (data) {
+                form.setFieldsValue({
+                    email: data.email || '',
+                    name: data.name || '',
+                    productId: data.productId || '',
+                    productName: data.productTitle || '',
+                    imageUrl: data.image || '',
+                    rating: data.rating || 0,
+                    images: [],
+                    deletedMedias: [],
+                    title: '',
+                    description: '',
+
+                });
+                setInitialValues({
+                    email: data.email || '',
+                    name: data.name || '',
+                    productId: data.productId || '',
+                    productName: data.productTitle || '',
+                    imageUrl: data.image || '',
+                    rating: data.rating || 0,
+                    images: [],
+                    deletedMedias: [],
+                    title: '',
+                    description: '',
+
+                });
+            }
             const user = getUser();
             setUser({ ...user || {}, shop: data.shop });
+            setIsloading(false);
             checkReviewed(data);
-            getSettings(data, data.shop);
-            form.setFieldValue('name', data.name);
+            getSettings(data.shop);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (requestId) {
+            getRequest();
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -119,41 +115,60 @@ const ReviewFromEmail = () => {
         return (((settings || {}).reviewWidget || {}).general || {}).uploadImages || (((settings || {}).reviewWidget || {}).general || {}).uploadImages;
     }, [settings]);
 
-    const handleFinish = (values) => {
-        const user = getUser();
-        const data = decodeBase64Review(params);
-        // Submit API logic here
-        const deepClonedValues = JSON.parse(JSON.stringify(values));
-        if (!uploadMediachecked) {
-            delete deepClonedValues.images;
-        }
-        const dataToSubmit = {
-            ...initialValues,
-            ...deepClonedValues,
-            shop: user.shop,
-            source: 'email',
-            requestId: data.requestId,
-        };
-        if (!dataToSubmit.shop) return;
-        toggleSubmitLoader(true);
-        http.post(`api/public/reviews/save`, dataToSubmit).then(({ status }) => {
+    const handleFinish = async () => {
+        try {
+            const values = await form.validateFields();
+            setSubmitted(true);
+            const user = getUser();
+            const deepClonedValues = JSON.parse(JSON.stringify(values));
+
+            if (!uploadMediachecked) {
+                delete deepClonedValues.images;
+            }
+
+            const dataToSubmit = {
+                ...initialValues,
+                ...deepClonedValues,
+                shop: user.shop,
+                source: 'email',
+                requestId,
+            };
+
+            if (!dataToSubmit.shop) return;
+
+            toggleSubmitLoader(true);
+            http.post(`api/public/reviews/save`, dataToSubmit).then(({ status }) => {
             toggleReviewed(true);
             toggleSubmitLoader(false);
-        }).catch(() => {
-            toggleSubmitLoader(false);
-        });
+            }).catch(() => {
+                toggleSubmitLoader(false);
+            });
+        } catch(error) {
+
+        } finally {
+            setSubmitted(true);
+        }
+        toggleSubmitLoader(false);
     };
 
     const handleMouseEnter = (index) => setHovered(index);
     const handleMouseLeave = () => setHovered(null);
     const handleClick = (index) => {
-        form.setFieldValue(['rating'], index);
+        form.setFieldValue(['rating'], index ? index: null);
     };
 
     const handleChange = useCallback(
         (newChecked) => setUploadMediachecked(newChecked),
         [],
     );
+
+    const ratingValidator = useCallback((rule, value) => {
+        const error = ((((settings || {}).reviewWidget || {}).translations || {}).reviewForm || {}).ratingValidation;
+        if (value === 0) {
+          return Promise.reject(error || 'Please select a rating.');
+        }
+        return Promise.resolve();
+      }, [settings]);
 
     return (
         <>
@@ -162,7 +177,7 @@ const ReviewFromEmail = () => {
                     <Layout.Section>
                         {
                             !isReviewed ? <Box background="bg-surface" style={{ padding: "20px", borderRadius: "10px", backgroundColor: "#fff", margin: "30px auto", maxWidth: "600px", display: "flex", justifyContent: "center", alignItems: "center" }} borderRadius="300" shadow="md">
-                                <Form form={form} onFinish={handleFinish} initialValues={initialValues}>
+                                <Form form={form} initialValues={initialValues}>
                                     <Field
                                         name="deletedMedias"
                                     >
@@ -180,8 +195,7 @@ const ReviewFromEmail = () => {
                                                     />
                                                 )}
                                             </Field>
-                                        </InlineStack >
-
+                                        </InlineStack>
 
                                         {/* Prompt */}
                                         <InlineStack InlineStack gap="200" align='center' >
@@ -194,50 +208,58 @@ const ReviewFromEmail = () => {
                                             </Field>
                                         </InlineStack >
 
-                                        {/* Star Rating */}
-                                        <InlineStack InlineStack gap="200" align='center' >
-                                            <Field name={['rating']} rules={[
-                                                {
-                                                    required: true,
-                                                    message: `Rating is required.`
-                                                }
-                                            ]}>
-                                                {({ value }) => {
-                                                    return <Box style={{ display: 'flex', alignItems: 'center' }}>
-                                                        {[...Array(5)].map((_, i) => {
-                                                            const starIndex = i + 1;
-                                                            return (
-                                                                <StarIcon
-                                                                    key={starIndex}
-                                                                    filled={hovered != null ? starIndex <= hovered : starIndex <= value}
-                                                                    onClick={() => handleClick(starIndex)}
-                                                                    onMouseEnter={() => handleMouseEnter(starIndex)}
-                                                                    onMouseLeave={handleMouseLeave}
-                                                                    settings={settings}
-                                                                />
-                                                            );
-                                                        })}</Box>
-                                                }}
-                                            </Field>
-                                        </InlineStack >
+                                                    <BlockStack align='center'>
+                                                        {/* Star Rating */}
+                                                        <InlineStack InlineStack gap="200" align='center'>
+                                                            <Field name={['rating']} rules={[
+                                                                { validator: ratingValidator }
+                                                            ]}>
+                                                                {({ value }) => {
+                                                                    return <Box style={{ display: 'flex', alignItems: 'center' }}>
+                                                                        {[...Array(5)].map((_, i) => {
+                                                                            const starIndex = i + 1;
+                                                                            return (
+                                                                                <StarIcon
+                                                                                    key={starIndex}
+                                                                                    filled={hovered != null ? starIndex <= hovered : starIndex <= value}
+                                                                                    onClick={() => handleClick(starIndex)}
+                                                                                    onMouseEnter={() => handleMouseEnter(starIndex)}
+                                                                                    onMouseLeave={handleMouseLeave}
+                                                                                    settings={settings}
+                                                                                />
+                                                                            );
+                                                                        })}</Box>
+                                                                }}
+                                                            </Field>
+                                                        </InlineStack >
+                                                            {submitted && (form.getFieldError('rating') || []).length > 0 && (
+                                                                <Text alignment='center' tone="critical">{form.getFieldError('rating')[0]}</Text>
+                                                            )}
+                                                    </BlockStack>
                                         {/* name */}
                                         <Field
                                             name="name"
+                                            rules={[
+                                                { required: true, message: (((settings || {}).translations || {}).reviewForm || {}).nameFieldLabel || "Name is required." },
+                                            ]}
                                         >
                                             {({ value = '', onChange }) => (
                                                 <TextField
                                                     label={(((settings || {}).translations || {}).reviewForm || {}).nameFieldLabel || "Name"}
-                                                    placeholder={(((settings || {}).translations || {}).reviewForm || {}).nameFieldPlaceholder || "please enter your name"}
+                                                    placeholder={(((settings || {}).translations || {}).reviewForm || {}).nameFieldPlaceholder || "Enter your name (public)"}
                                                     value={value}
                                                     onChange={onChange}
                                                     autoComplete="off"
+                                                    error={submitted && (form.getFieldError('name') || []).length > 0 && (
+                                                        <Text alignment='center' tone="critical">{form.getFieldError('name')[0]}</Text>
+                                                    )}
                                                 />
                                             )}
                                         </Field >
                                         {/* Review Title */}
                                         <Field
                                             name="title"
-                                            rules={[{ required: (((settings || {}).translations || {}).reviewForm || {}).titleFieldValidation ? true : false, message: (((settings || {}).translations || {}).reviewForm || {}).titleFieldValidation || "" }]}
+                                            rules={[{ required: true, message: (((settings || {}).translations || {}).reviewForm || {}).titleFieldValidation || "Review title is required." }]}
                                         >
                                             {({ value = '', onChange }) => (
                                                 <TextField
@@ -246,7 +268,9 @@ const ReviewFromEmail = () => {
                                                     value={value}
                                                     onChange={onChange}
                                                     autoComplete="off"
-                                                    error={(form.getFieldError("title") || []).length ? (((settings || {}).translations || {}).reviewForm || {}).titleFieldValidation : ""}
+                                                    error={submitted && (form.getFieldError('title') || []).length > 0 && (
+                                                        <Text alignment='center' tone="critical">{form.getFieldError('title')[0]}</Text>
+                                                    )}
                                                 />
                                             )}
                                         </Field >
@@ -254,18 +278,19 @@ const ReviewFromEmail = () => {
                                         {/* Review Body */}
                                         <Field
                                             name="description"
-                                            rules={[{ required: (((settings || {}).translations || {}).reviewForm || {}).reviewValidation ? true : false, message: (((settings || {}).translations || {}).reviewForm || {}).reviewValidation || "" }]}
-
+                                            rules={[{ required: true, message: (((settings || {}).translations || {}).reviewForm || {}).reviewValidation || "Review text is required." }]}
                                         >
                                             {({ value = '', onChange }) => (
                                                 <TextField
-                                                    label="Write a review"
-                                                    placeholder="Please share your thoughts here"
+                                                    label={(((settings || {}).translations || {}).reviewForm || {}).reviewFieldLabel || "Review text"}
+                                                    placeholder={(((settings || {}).translations || {}).reviewForm || {}).reviewFieldPlaceholder || "Write your review here."}
                                                     value={value}
                                                     onChange={onChange}
                                                     multiline={4}
                                                     autoComplete="off"
-                                                    error={(form.getFieldError("description") || []).length ? (((settings || {}).translations || {}).reviewForm || {}).reviewValidation : ""}
+                                                    error={submitted && (form.getFieldError('description') || []).length > 0 && (
+                                                        <Text alignment='center' tone="critical">{form.getFieldError('description')[0]}</Text>
+                                                    )}
                                                 />
                                             )}
                                         </Field >
@@ -286,14 +311,24 @@ const ReviewFromEmail = () => {
 
                                         {/* Disclaimer */}
                                         <Text fontWeight="regular" alignment="center" tone="subdued">
-                                            By submitting your review, you consent to be contacted if necessary regarding your feedback. You also agree to Squid’s
-                                            <a href="" target="_blank" rel="noopener noreferrer">Terms of Service</a>,
-                                            <a href="" target="_blank" rel="noopener noreferrer">Privacy Policy</a>, and
-                                            <a href="" target="_blank" rel="noopener noreferrer">Content Policy</a>.
+                                            {
+                                                ((((settings || {}).reviewWidget || {}).translations || {}).reviewForm || {}).instructions ?
+                                                <span
+                                                    dangerouslySetInnerHTML={{
+                                                    __html: ((((settings || {}).reviewWidget || {}).translations || {}).reviewForm || {}).instructions,
+                                                    }}
+                                                />
+                                                : <>
+                                                By submitting your review, you consent to be contacted if necessary regarding your feedback. You also agree to Squid’s
+                                                <a href="" target="_blank" rel="noopener noreferrer"> Terms of Service</a>,
+                                                <a href="" target="_blank" rel="noopener noreferrer"> Privacy Policy</a>, and
+                                                <a href="" target="_blank" rel="noopener noreferrer"> Content Policy</a>.
+                                                </>
+                                                }
                                         </Text>
 
                                         {/* Submit Button */}
-                                        <Button submit icon={ArrowRightMinor} variant="primary" loading={submitLoader}>
+                                        <Button onClick={handleFinish} icon={ArrowRightMinor} variant="primary" loading={submitLoader}>
                                             {(((settings || {}).translations || {}).reviewForm || {}).submitBtn || "Submit Review"}
                                         </Button>
                                     </BlockStack >
