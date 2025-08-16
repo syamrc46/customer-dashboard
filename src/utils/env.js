@@ -1,1 +1,1 @@
-export const HOST = 'https://staging.squidapps.co/';
+export const HOST = 'https://launch.squidapps.co/';
